@@ -16,10 +16,15 @@ class AuthController extends Controller
 
             if($user == null){
                 return response()->json([
-                    'message'=>'Usuario no registrado'
+                    'message'=>'Usuario invalid'
                 ],404);
             }
-            Auth::attempt($request->only('email','password'));
+            if (!Auth::attempt($request->only('email','password'))){
+                return response()->json([
+                    'message'=>'Password incorrect'
+                ],404);
+            }
+
             $token = $user->createToken('auth-token')->plainTextToken;
 
             return response()->json([
@@ -35,5 +40,4 @@ class AuthController extends Controller
             ]);
         }
     }
-
 }

@@ -6,18 +6,22 @@ use App\Http\Requests\TodoStore;
 use App\Models\Todo;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TodoController extends Controller
 {
+    public function __construct() {
+
+    }
     public function index()
     {
-        $todos = Todo::all();
+        $todos = Todo::where("user_id",Auth::user()->id)->get();
         return response()->json($todos);
     }
 
     public function show($id)
     {
-        $todo = Todo::find($id);
+        $todo = Todo::where("user_id",Auth::user()->id)->where('id',$id)->first();
         if ($todo === null) {
             return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
         }
@@ -31,6 +35,7 @@ class TodoController extends Controller
             $todo = new Todo([
                 'title' => $request->input('title'),
                 'description' => $request->input('description'),
+                'user_id'=> Auth::user()->id
             ]);
 
             $todo->save();
@@ -44,7 +49,7 @@ class TodoController extends Controller
     public function update($id, Request $request)
     {
         try {
-            $todo = Todo::find($id);
+            $todo = Todo::where("user_id",Auth::user()->id)->where('id',$id)->first();
             if ($todo === null) {
                 return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
             }
@@ -58,7 +63,7 @@ class TodoController extends Controller
     public function destroy($id)
     {
         try {
-            $todo = Todo::find($id);
+            $todo = Todo::where("user_id",Auth::user()->id)->where('id',$id)->first();
             if ($todo === null) {
                 return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
             }
