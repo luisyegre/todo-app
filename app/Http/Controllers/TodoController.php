@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\TodoStore;
 use App\Models\Todo;
+use Exception;
 use Illuminate\Http\Request;
 
 class TodoController extends Controller
@@ -16,39 +18,54 @@ class TodoController extends Controller
     public function show($id)
     {
         $todo = Todo::find($id);
-        return response()->json($todo);
+        if ($todo === null) {
+            return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
+        }
+        return response()->json(["data" => $todo]);
+
     }
 
-    public function store(Request $request)
+    public function store(TodoStore $request)
     {
-        $this->validate($request, [
-            'title' => 'required',
-        ]);
+        try {
+            $todo = new Todo([
+                'title' => $request->input('title'),
+                'description' => $request->input('description'),
+            ]);
 
-        $todo = new Todo([
-            'title' => $request->input('title'),
-            'description' => $request->input('description'),
-        ]);
+            $todo->save();
 
-        $todo->save();
-
-        return response()->json('Todo created!');
+            return response()->json(["message"=>"Todo created"],201);
+        } catch(\Exception $e) {
+            return response()->json(["message"=>"Something went wrong","error"=> $e->getMessage()],400);
+        }
     }
 
     public function update($id, Request $request)
     {
-        $todo = Todo::find($id);
-
-        $todo->update($request->all());
-
-        return response()->json('Todo updated!');
+        try {
+            $todo = Todo::find($id);
+            if ($todo === null) {
+                return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
+            }
+            $todo->update($request->all());
+            return response()->json(["message"=>"Todo updated"]);
+        } catch(\Exception $e){
+            return response()->json(["message"=>"Todo updated","error"=>$e->getMessage()],400);
+        }
     }
 
     public function destroy($id)
     {
-        $todo = Todo::find($id);
-        $todo->delete();
-
-        return response()->json('Todo deleted!');
+        try {
+            $todo = Todo::find($id);
+            if ($todo === null) {
+                return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
+            }
+            $todo->delete();
+            return response()->json(["message"=>"Todo deleted"]);
+        } catch(\Exception $e){
+            return response()->json(["message"=>"Todo updated","error"=>$e->getMessage()],400);
+        }
     }
 }
