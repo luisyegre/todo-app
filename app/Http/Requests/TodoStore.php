@@ -20,7 +20,7 @@ class TodoStore extends FormRequest
         throw new HttpResponseException(response()->json([
             'message'   => 'Validation errors',
             'error'     => $validator->errors()
-        ]));
+        ],400));
     }
 
     public function messages()

@@ -15,7 +15,7 @@ class TodoController extends Controller
     }
     public function index()
     {
-        $todos = Todo::where("user_id",Auth::user()->id)->get();
+        $todos = Todo::where("user_id",Auth::user()->id)->orderBy('created_at','desc')->get();
         return response()->json($todos);
     }
 
@@ -40,7 +40,7 @@ class TodoController extends Controller
 
             $todo->save();
 
-            return response()->json(["message"=>"Todo created"],201);
+            return response()->json(["message"=>"Todo created","todo"=>$todo],201);
         } catch(\Exception $e) {
             return response()->json(["message"=>"Something went wrong","error"=> $e->getMessage()],400);
         }
@@ -53,8 +53,11 @@ class TodoController extends Controller
             if ($todo === null) {
                 return response()->json(["data" => $todo,"message"=>"Todo not found"],404);
             }
-            $todo->update($request->all());
-            return response()->json(["message"=>"Todo updated"]);
+            $todo->update([
+                "title"=> $request->input("title"),
+                "description"=> $request->input("description")
+            ]);
+            return response()->json(["message"=>"Todo updated","todo"=>$todo]);
         } catch(\Exception $e){
             return response()->json(["message"=>"Todo updated","error"=>$e->getMessage()],400);
         }
